@@ -1,0 +1,3 @@
+Placeholder — frontend validation schemas (mirroring the API Contract's
+validation rules) are added alongside the forms that need them, starting
+in Slice 1 (auth forms) and Slice 3/4 (listing forms).

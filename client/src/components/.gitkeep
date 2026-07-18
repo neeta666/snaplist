@@ -1,0 +1,5 @@
+ProtectedRoute.jsx is the only real component in Slice 0. The remaining
+shared components from the Technical Design Document (ListingCard,
+StatusBadge, ImageUploader, LoadingSkeleton, EmptyState, Toast,
+ConfirmDialog) are added alongside the features that first need them
+(Slice 2 onward), rather than stubbed out empty now.
