@@ -1,13 +1,13 @@
 // App.jsx — routing skeleton.
 //
-// Wires AuthLayout/AppLayout to their respective pages. No real navigation
-// guarding exists yet (ProtectedRoute is a pass-through placeholder — see
-// components/ProtectedRoute.jsx); it will start actually redirecting once
-// Slice 1 adds real auth state. A brief backend connectivity check is
-// included here only to prove Slice 0's scaffolding works end to end
-// (frontend can reach the backend's health-check endpoint) — this is not a
-// permanent feature and will be removed once real pages replace this
-// landing view.
+// Wires AuthLayout/AppLayout to their respective pages. SessionInitializer
+// (defined below) calls useSessionRestore() from inside the <BrowserRouter>
+// tree, not before it — useSessionRestore doesn't currently use any
+// router-specific hooks itself, but keeping all routing-related
+// initialization inside the router's context is the safer long-term
+// pattern (e.g. if this hook or a sibling ever needs useNavigate/useLocation
+// as the app grows), rather than running it at the top of App() where
+// there's no router context yet at all.
 
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ import Dashboard from './pages/Dashboard';
 import NewListing from './pages/NewListing';
 import ListingDetail from './pages/ListingDetail';
 import { API_BASE_URL_ROOT } from './lib/apiClient';
+import { useSessionRestore } from './hooks/useSessionRestore';
 
 function ScaffoldStatus() {
   // Temporary Slice-0-only view: confirms the frontend can reach the
@@ -43,9 +44,18 @@ function ScaffoldStatus() {
   );
 }
 
+function SessionInitializer() {
+  // Renders nothing — exists purely so useSessionRestore() runs inside the
+  // <BrowserRouter> tree instead of at the top of App(), where no router
+  // context exists yet.
+  useSessionRestore();
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <SessionInitializer />
       <Routes>
         {/* Unauthenticated pages */}
         <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
