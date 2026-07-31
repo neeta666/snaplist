@@ -1,12 +1,11 @@
 // Storage Provider Adapter — interface contract.
 //
-// Documents the shape every image-storage provider adapter (Cloudinary now,
-// per ADR 8) is expected to implement. As with the AI interface, this is
-// documentation of the intended contract, not an enforcement mechanism —
-// plain JavaScript has no compiler to check that a concrete provider (e.g.
-// `cloudinary.provider.js`) actually matches this shape. The placeholder
-// methods below only throw if this reference object is called directly by
-// mistake; they do not validate any concrete provider's implementation.
+// Documents the shape every image-storage provider adapter is expected to
+// implement. This is documentation of the intended contract rather than an
+// enforcement mechanism because the project uses plain JavaScript.
+//
+// The placeholder methods below only throw if this reference object is called
+// directly by mistake. Concrete providers implement the same method shape.
 
 /**
  * @typedef {Object} UploadImageOutput
@@ -20,7 +19,9 @@ export const StorageProviderInterface = {
    * @returns {Promise<UploadImageOutput>}
    */
   async uploadImage(_fileData) {
-    throw new Error('StorageProviderInterface.uploadImage is not implemented — use a concrete provider (e.g. cloudinary.provider.js).');
+    throw new Error(
+      'StorageProviderInterface.uploadImage is not implemented — use a concrete storage provider.',
+    );
   },
 
   /**
@@ -28,6 +29,8 @@ export const StorageProviderInterface = {
    * @returns {Promise<void>}
    */
   async deleteImage(_publicId) {
-    throw new Error('StorageProviderInterface.deleteImage is not implemented — use a concrete provider (e.g. cloudinary.provider.js).');
+    throw new Error(
+      'StorageProviderInterface.deleteImage is not implemented — use a concrete storage provider.',
+    );
   },
 };

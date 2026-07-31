@@ -5,7 +5,7 @@
 // variable the backend depends on, and one place to add validation later
 // (e.g., "throw at startup if JWT_SECRET is missing") without hunting through
 // the codebase. In Slice 0, we only read the variables scaffolding needs;
-// later slices (auth, Cloudinary, Gemini) will add their own keys here rather
+// later slices (auth, ImageKit, Gemini) will add their own keys here rather
 // than reading process.env inline in their own modules.
 
 import dotenv from 'dotenv';
