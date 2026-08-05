@@ -1,13 +1,3 @@
-// Centralized environment variable access.
-//
-// Design decision: every other file in the app imports `env` from here rather
-// than calling `process.env.X` directly. This gives us one place to see every
-// variable the backend depends on, and one place to add validation later
-// (e.g., "throw at startup if JWT_SECRET is missing") without hunting through
-// the codebase. In Slice 0, we only read the variables scaffolding needs;
-// later slices (auth, ImageKit, Gemini) will add their own keys here rather
-// than reading process.env inline in their own modules.
-
 import dotenv from 'dotenv';
 
 dotenv.config({ quiet: true });
@@ -32,6 +22,7 @@ export const env = {
 
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',
+    model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
   },
 
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
