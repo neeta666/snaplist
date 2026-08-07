@@ -1,5 +1,7 @@
 import { AppError } from '../../utils/AppError.js';
 import { listingRepository } from './listing.repository.js';
+import { imagekitProvider } from '../../providers/storage/imagekit.provider.js';
+import { geminiProvider } from '../../providers/ai/gemini.provider.js';
 
 function toPublicListing(doc) {
   return {
@@ -120,6 +122,54 @@ export const listingService = {
 
     return {
       image: listing.images[0],
+    };
+  },
+
+  async generateDraft({ file, fields }) {
+    let uploadedImage;
+    try {
+      uploadedImage = await imagekitProvider.uploadImage(file.buffer);
+    } catch {
+      throw new AppError('Image storage service is temporarily unavailable', 503);
+    }
+
+    let draftContent;
+    try {
+      draftContent = await geminiProvider.generateListing({
+        imageUrl: uploadedImage.url,
+        condition: fields.condition,
+        brand: fields.brand,
+        age: fields.age,
+        originalPrice: fields.originalPrice,
+        platformStyle: fields.platformStyle,
+      });
+    } catch (generationError) {
+      try {
+        await imagekitProvider.deleteImage(uploadedImage.publicId);
+      } catch (cleanupError) {
+        // Cleanup failure is a secondary, lower-severity problem — the
+        // orphaned asset is an already-accepted MVP tradeoff (API Contract
+        // 3.1). It must not mask the original Gemini failure.
+        console.error('[listing.generateDraft] Failed to clean up orphaned ImageKit asset', cleanupError);
+      }
+
+      const providerStatus = generationError.status ?? generationError.statusCode;
+      if (providerStatus === 503) {
+        throw new AppError('AI service is temporarily unavailable', 503);
+      }
+      throw new AppError('AI generation failed', 502);
+    }
+
+    return {
+      title: draftContent.title,
+      description: draftContent.description,
+      category: draftContent.category,
+      highlights: draftContent.highlights,
+      estimatedPriceRange: draftContent.estimatedPriceRange,
+      image: {
+        url: uploadedImage.url,
+        publicId: uploadedImage.publicId,
+      },
     };
   },
 };

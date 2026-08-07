@@ -5,8 +5,11 @@ import {
   validateListingQuery,
   validateSaveListing,
   validateUpdateListing,
+  validateGenerateListing,
 } from './listing.validation.js';
 import { requireAuth } from '../../middleware/requireAuth.js';
+import { aiGenerationRateLimiter } from '../../middleware/aiGenerationRateLimiter.js';
+import { uploadImageMiddleware } from '../../middleware/uploadImageMiddleware.js';
 
 const router = Router();
 
@@ -14,6 +17,15 @@ const router = Router();
 router.use(requireAuth);
 
 router.post('/', validateSaveListing, listingController.create);
+
+// Must come before /:id so "generate" is never parsed as a listing ID.
+router.post(
+  '/generate',
+  aiGenerationRateLimiter,
+  uploadImageMiddleware,
+  validateGenerateListing,
+  listingController.generateDraft
+);
 
 router.get('/', validateListingQuery, listingController.getAll);
 

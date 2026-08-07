@@ -104,4 +104,23 @@ export const listingController = {
       return next(error);
     }
   },
+
+  async generateDraft(req, res, next) {
+    try {
+      const draft = await listingService.generateDraft({
+        file: req.file,
+        fields: req.body,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Listing draft generated successfully',
+        data: {
+          draft,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
 };

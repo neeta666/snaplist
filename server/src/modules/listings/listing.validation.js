@@ -118,6 +118,28 @@ const updateListingSchema = z
     message: 'At least one field is required',
   });
 
+// Multipart text fields arrive as strings, and optional fields left blank
+// in a form arrive as "" rather than being omitted — so "" is normalized
+// to undefined before the usual field schemas run, otherwise "" would fail
+// enum/string validation and originalPrice="" would coerce to 0.
+const emptyToUndefined = (value) => (value === '' ? undefined : value);
+
+const generateListingSchema = z
+  .object({
+    condition: z.preprocess(emptyToUndefined, listingFields.condition),
+    brand: z.preprocess(emptyToUndefined, listingFields.brand),
+    age: z.preprocess(emptyToUndefined, listingFields.age),
+    originalPrice: z.preprocess(
+      emptyToUndefined,
+      z.coerce
+        .number()
+        .nonnegative('Original price cannot be negative')
+        .optional()
+    ),
+    platformStyle: listingFields.platformStyle,
+  })
+  .strict();
+
 const listingIdSchema = z.object({
   id: z
     .string()
@@ -164,6 +186,8 @@ function validateBody(schema) {
 export const validateSaveListing = validateBody(saveListingSchema);
 
 export const validateUpdateListing = validateBody(updateListingSchema);
+
+export const validateGenerateListing = validateBody(generateListingSchema);
 
 export function validateListingId(req, res, next) {
   const result = listingIdSchema.safeParse(req.params);
