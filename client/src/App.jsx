@@ -20,6 +20,7 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import NewListing from './pages/NewListing';
 import ListingDetail from './pages/ListingDetail';
+import Listings from './pages/Listings';
 import { API_BASE_URL_ROOT } from './lib/apiClient';
 import { useSessionRestore } from './hooks/useSessionRestore';
 
@@ -69,6 +70,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/listings"
+            element={
+              <ProtectedRoute>
+                <Listings />
               </ProtectedRoute>
             }
           />

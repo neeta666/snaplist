@@ -41,3 +41,11 @@ export async function getListing(id) {
 
   return response.data.data.listing;
 }
+
+// GET /listings (API Contract 3.3). params are optional query filters
+// (page, limit, search, status, category, platformStyle, sortBy, sortOrder).
+export async function getListings(params = {}) {
+  const response = await apiClient.get('/listings', { params });
+
+  return response.data.data;
+}
