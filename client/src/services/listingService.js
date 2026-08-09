@@ -34,3 +34,10 @@ export async function saveListing(payload) {
 
   return response.data.data.listing;
 }
+
+// GET /listings/:id (API Contract 3.4).
+export async function getListing(id) {
+  const response = await apiClient.get(`/listings/${id}`);
+
+  return response.data.data.listing;
+}
