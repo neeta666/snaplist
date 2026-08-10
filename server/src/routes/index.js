@@ -10,14 +10,13 @@ import { Router } from 'express';
 import healthRoutes from './health.routes.js';
 import authRoutes from '../modules/auth/auth.routes.js';
 import listingRoutes from '../modules/listings/listing.routes.js';
+import dashboardRoutes from '../modules/dashboard/dashboard.routes.js';
 
 const router = Router();
 
 router.use('/health', healthRoutes);
 router.use('/api/v1/auth', authRoutes);
 router.use('/api/v1/listings', listingRoutes);
-
-// Dashboard routes are added in Slice 6, mounted the same way:
-// router.use('/api/v1/dashboard', dashboardRoutes);
+router.use('/api/v1/dashboard', dashboardRoutes);
 
 export default router;

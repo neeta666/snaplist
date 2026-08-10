@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Listing from './listing.model.js';
 
 function isCastError(error) {
@@ -147,5 +148,22 @@ export const listingRepository = {
 
       throw error;
     }
+  },
+
+  // Single aggregation, scoped to userId, for dashboard stats (API
+  // Contract 4.1). $facet avoids four separate queries. $match needs a
+  // real ObjectId — unlike find()/findOne(), aggregate() does not cast.
+  async getStatsByUser(userId) {
+    const [result] = await Listing.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $facet: {
+          statusCounts: [{ $group: { _id: '$status', count: { $sum: 1 } } }],
+          categoryCounts: [{ $group: { _id: '$category', count: { $sum: 1 } } }],
+        },
+      },
+    ]);
+
+    return result;
   },
 };
