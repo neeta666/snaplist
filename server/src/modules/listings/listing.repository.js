@@ -14,6 +14,7 @@ function buildUserListingQuery({
   search,
   status,
   category,
+  condition,
   platformStyle,
 }) {
   const query = { userId };
@@ -33,6 +34,10 @@ function buildUserListingQuery({
 
   if (category) {
     query.category = category;
+  }
+
+  if (condition) {
+    query.condition = condition;
   }
 
   if (platformStyle) {
@@ -64,6 +69,7 @@ export const listingRepository = {
     search,
     status,
     category,
+    condition,
     platformStyle,
     sortBy = 'createdAt',
     sortOrder = 'desc',
@@ -75,6 +81,7 @@ export const listingRepository = {
       search,
       status,
       category,
+      condition,
       platformStyle,
     });
 

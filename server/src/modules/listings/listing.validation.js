@@ -118,24 +118,18 @@ const updateListingSchema = z
     message: 'At least one field is required',
   });
 
-// Multipart text fields arrive as strings, and optional fields left blank
-// in a form arrive as "" rather than being omitted — so "" is normalized
-// to undefined before the usual field schemas run, otherwise "" would fail
-// enum/string validation and originalPrice="" would coerce to 0.
-const emptyToUndefined = (value) => (value === '' ? undefined : value);
-
+// Multipart text fields always arrive as strings, so originalPrice needs
+// coercion here — unlike the JSON-body schemas above, where the client
+// sends a real number.
 const generateListingSchema = z
   .object({
-    condition: z.preprocess(emptyToUndefined, listingFields.condition),
-    brand: z.preprocess(emptyToUndefined, listingFields.brand),
-    age: z.preprocess(emptyToUndefined, listingFields.age),
-    originalPrice: z.preprocess(
-      emptyToUndefined,
-      z.coerce
-        .number()
-        .nonnegative('Original price cannot be negative')
-        .optional()
-    ),
+    condition: listingFields.condition,
+    brand: listingFields.brand,
+    age: listingFields.age,
+    originalPrice: z.coerce
+      .number()
+      .nonnegative('Original price cannot be negative')
+      .optional(),
     platformStyle: listingFields.platformStyle,
   })
   .strict();
@@ -153,6 +147,7 @@ const listingQuerySchema = z
     search: z.string().trim().min(1).optional(),
     status: statusSchema.optional(),
     category: z.string().trim().min(1).optional(),
+    condition: conditionSchema.optional(),
     platformStyle: platformStyleSchema.optional(),
     sortBy: z.enum(['createdAt', 'price', 'title']).default('createdAt'),
     sortOrder: z.enum(['asc', 'desc']).default('desc'),
