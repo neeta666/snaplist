@@ -165,3 +165,77 @@ export const saveListingSchema = z.object({
 
   image: savedImageSchema,
 });
+
+// Update Listing (API Contract 3.5). Same per-field rules as Save, minus
+// image/aiMeta/userId (immutable or server-controlled), all fields optional,
+// with at least one required. askingPrice is optional here — unlike Save,
+// a blank value means "not being changed", not "invalid".
+export const updateListingSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(1, 'Title cannot be empty')
+      .max(100, 'Title must be at most 100 characters')
+      .optional(),
+
+    description: z
+      .string()
+      .trim()
+      .min(1, 'Description cannot be empty')
+      .max(2000, 'Description must be at most 2000 characters')
+      .optional(),
+
+    category: z
+      .string()
+      .trim()
+      .min(1, 'Category cannot be empty')
+      .max(50, 'Category must be at most 50 characters')
+      .optional(),
+
+    highlights: savedHighlightsSchema,
+
+    condition: z.preprocess(
+      emptyToUndefined,
+      z.enum(['new', 'like_new', 'good', 'fair']).optional()
+    ),
+
+    brand: z.preprocess(
+      emptyToUndefined,
+      z.string().trim().max(50, 'Brand must be at most 50 characters').optional()
+    ),
+
+    age: z.preprocess(
+      emptyToUndefined,
+      z.string().trim().max(30, 'Age must be at most 30 characters').optional()
+    ),
+
+    originalPrice: z.preprocess(
+      emptyToUndefined,
+      z.coerce
+        .number({ error: () => 'Original price must be a number' })
+        .nonnegative('Original price cannot be negative')
+        .optional()
+    ),
+
+    askingPrice: z.preprocess(
+      emptyToUndefined,
+      z.coerce
+        .number({ error: () => 'Asking price must be a number' })
+        .nonnegative('Asking price cannot be negative')
+        .optional()
+    ),
+
+    estimatedPriceRange: estimatedPriceRangeSchema,
+
+    platformStyle: z.enum(['general', 'olx', 'facebook']).optional(),
+
+    status: z.enum(['draft', 'active', 'sold']).optional(),
+  })
+  .strict()
+  // Object.keys() alone isn't enough: preprocessing can leave a key present
+  // with value undefined (e.g. { askingPrice: undefined }), which still
+  // counts as a key but carries no actual update.
+  .refine((value) => Object.values(value).some((v) => v !== undefined), {
+    message: 'At least one field is required',
+  });

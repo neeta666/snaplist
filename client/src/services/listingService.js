@@ -49,3 +49,16 @@ export async function getListings(params = {}) {
 
   return response.data.data;
 }
+
+// PATCH /listings/:id (API Contract 3.5). updates must never include
+// image/aiMeta/userId — image is immutable, the rest are server-controlled.
+export async function updateListing(id, updates) {
+  const response = await apiClient.patch(`/listings/${id}`, updates);
+
+  return response.data.data.listing;
+}
+
+// DELETE /listings/:id (API Contract 3.6).
+export async function deleteListing(id) {
+  await apiClient.delete(`/listings/${id}`);
+}
