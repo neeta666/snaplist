@@ -174,4 +174,42 @@ export const listingService = {
       },
     };
   },
+
+  // Regenerate (API Contract 3.7). Reuses the listing's existing saved
+  // image and fields — no ImageKit call, no persistence, no aiMeta in the
+  // response. Same 502/503 mapping as generateDraft, minus the upload
+  // failure/cleanup cases, since there's no new upload here.
+  async regenerateDraft({ userId, id, platformStyle }) {
+    const listing = await listingRepository.findOneByIdAndUser({ id, userId });
+
+    if (!listing) {
+      throw new AppError('Listing not found', 404);
+    }
+
+    let draftContent;
+    try {
+      draftContent = await geminiProvider.generateListing({
+        imageUrl: listing.images[0].url,
+        condition: listing.condition,
+        brand: listing.brand,
+        age: listing.age,
+        originalPrice: listing.originalPrice,
+        platformStyle: platformStyle ?? listing.platformStyle,
+      });
+    } catch (generationError) {
+      const providerStatus = generationError.status ?? generationError.statusCode;
+      if (providerStatus === 503) {
+        throw new AppError('AI service is temporarily unavailable', 503);
+      }
+      throw new AppError('AI generation failed', 502);
+    }
+
+    return {
+      title: draftContent.title,
+      description: draftContent.description,
+      category: draftContent.category,
+      highlights: draftContent.highlights,
+      estimatedPriceRange: draftContent.estimatedPriceRange,
+    };
+  },
 };

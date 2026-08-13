@@ -123,4 +123,24 @@ export const listingController = {
       return next(error);
     }
   },
+
+  async regenerateDraft(req, res, next) {
+    try {
+      const draft = await listingService.regenerateDraft({
+        userId: getUserId(req),
+        id: req.params.id,
+        platformStyle: req.body.platformStyle,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Listing regenerated successfully',
+        data: {
+          draft,
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
 };

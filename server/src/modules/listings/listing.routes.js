@@ -6,6 +6,7 @@ import {
   validateSaveListing,
   validateUpdateListing,
   validateGenerateListing,
+  validateRegenerateListing,
 } from './listing.validation.js';
 import { requireAuth } from '../../middleware/requireAuth.js';
 import { aiGenerationRateLimiter } from '../../middleware/aiGenerationRateLimiter.js';
@@ -46,6 +47,16 @@ router.delete(
   '/:id',
   validateListingId,
   listingController.remove
+);
+
+// Shares the same rate-limit bucket as /generate — same middleware
+// instance, keyed by req.user.id.
+router.post(
+  '/:id/regenerate',
+  validateListingId,
+  aiGenerationRateLimiter,
+  validateRegenerateListing,
+  listingController.regenerateDraft
 );
 
 export default router;

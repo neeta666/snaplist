@@ -134,6 +134,20 @@ const generateListingSchema = z
   })
   .strict();
 
+// Regenerate (API Contract 3.7) — the whole body is optional, including a
+// request with no body at all (req.body === undefined). Preprocess
+// normalizes undefined to {} before the strict object schema runs, so a
+// bodyless POST is valid rather than failing "expected object, got
+// undefined".
+const regenerateListingSchema = z.preprocess(
+  (value) => value ?? {},
+  z
+    .object({
+      platformStyle: listingFields.platformStyle.optional(),
+    })
+    .strict()
+);
+
 const listingIdSchema = z.object({
   id: z
     .string()
@@ -183,6 +197,8 @@ export const validateSaveListing = validateBody(saveListingSchema);
 export const validateUpdateListing = validateBody(updateListingSchema);
 
 export const validateGenerateListing = validateBody(generateListingSchema);
+
+export const validateRegenerateListing = validateBody(regenerateListingSchema);
 
 export function validateListingId(req, res, next) {
   const result = listingIdSchema.safeParse(req.params);

@@ -43,7 +43,7 @@ export async function getListing(id) {
 }
 
 // GET /listings (API Contract 3.3). params are optional query filters
-// (page, limit, search, status, category, platformStyle, sortBy, sortOrder).
+// (page, limit, search, status, category, condition, platformStyle, sortBy, sortOrder).
 export async function getListings(params = {}) {
   const response = await apiClient.get('/listings', { params });
 
@@ -61,4 +61,14 @@ export async function updateListing(id, updates) {
 // DELETE /listings/:id (API Contract 3.6).
 export async function deleteListing(id) {
   await apiClient.delete(`/listings/${id}`);
+}
+
+// POST /listings/:id/regenerate (API Contract 3.7). platformStyle is
+// optional — omit it entirely to reuse the listing's current value.
+// Returns an unsaved draft; nothing is persisted until PATCH.
+export async function regenerateListing(id, platformStyle) {
+  const body = platformStyle !== undefined ? { platformStyle } : {};
+  const response = await apiClient.post(`/listings/${id}/regenerate`, body);
+
+  return response.data.data.draft;
 }

@@ -1,9 +1,13 @@
-// Listing Detail page — view, edit, status change, delete.
-// AI Regenerate is not implemented yet.
+// Listing Detail page — view, edit, status change, delete, regenerate.
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getListing, updateListing, deleteListing } from '../services/listingService';
+import {
+  getListing,
+  updateListing,
+  deleteListing,
+  regenerateListing,
+} from '../services/listingService';
 import { updateListingSchema } from '../schemas/listingSchemas';
 import { extractApiError } from '../lib/apiErrors';
 
@@ -92,6 +96,16 @@ export default function ListingDetail() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  // Regenerate: pick an optional platformStyle override, request a new
+  // draft, then review/edit it — nothing is saved until the user PATCHes.
+  const [regenPlatformStyle, setRegenPlatformStyle] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerateError, setRegenerateError] = useState('');
+  const [regenForm, setRegenForm] = useState(null);
+  const [regenFormErrors, setRegenFormErrors] = useState({});
+  const [regenFormError, setRegenFormError] = useState('');
+  const [isSavingRegen, setIsSavingRegen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -253,6 +267,139 @@ export default function ListingDetail() {
     }
   };
 
+  const handleRegenerate = async () => {
+    if (isRegenerating) return; // prevent duplicate submissions
+
+    setRegenerateError('');
+    setIsRegenerating(true);
+    try {
+      const draft = await regenerateListing(
+        id,
+        regenPlatformStyle !== '' ? regenPlatformStyle : undefined
+      );
+      // Draft never includes platformStyle — carry forward whichever value
+      // was actually used for this regeneration so it can be reviewed too.
+      setRegenForm({
+        title: draft.title,
+        description: draft.description,
+        category: draft.category,
+        highlights: draft.highlights,
+        estimatedPriceRange: draft.estimatedPriceRange,
+        platformStyle: regenPlatformStyle !== '' ? regenPlatformStyle : listing.platformStyle,
+      });
+      setRegenFormErrors({});
+      setRegenFormError('');
+    } catch (err) {
+      const { message } = extractApiError(err);
+      setRegenerateError(message);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const discardRegenDraft = () => {
+    setRegenForm(null);
+    setRegenFormErrors({});
+    setRegenFormError('');
+  };
+
+  const updateRegenField = (field, value) => {
+    setRegenForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const updateRegenHighlight = (index, value) => {
+    setRegenForm((current) => {
+      const highlights = [...current.highlights];
+      highlights[index] = value;
+      return { ...current, highlights };
+    });
+  };
+
+  const removeRegenHighlight = (index) => {
+    setRegenForm((current) => ({
+      ...current,
+      highlights: current.highlights.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addRegenHighlight = () => {
+    setRegenForm((current) => ({
+      ...current,
+      highlights: [...current.highlights, ''],
+    }));
+  };
+
+  const updateRegenPriceRange = (key, value) => {
+    setRegenForm((current) => ({
+      ...current,
+      estimatedPriceRange: {
+        ...current.estimatedPriceRange,
+        [key]: value,
+      },
+    }));
+  };
+
+  const handleSaveRegen = async () => {
+    if (isSavingRegen) return; // prevent duplicate submissions
+
+    setRegenFormErrors({});
+    setRegenFormError('');
+
+    // Compare against the same fields buildUpdates already knows how to
+    // diff; askingPrice/condition/brand/age/status aren't part of the
+    // regenerated draft, so they're simply absent from regenForm/listing
+    // comparison — buildUpdates only includes what's actually present.
+    const updates = buildUpdates(
+      {
+        ...regenForm,
+        condition: listing.condition ?? '',
+        brand: listing.brand ?? '',
+        age: listing.age ?? '',
+        originalPrice: listing.originalPrice ?? '',
+        askingPrice: listing.askingPrice,
+        status: listing.status,
+      },
+      listing
+    );
+
+    if (Object.keys(updates).length === 0) {
+      setRegenFormError('No changes to save');
+      return;
+    }
+
+    const result = updateListingSchema.safeParse(updates);
+    if (!result.success) {
+      const nextErrors = {};
+      result.error.issues.forEach((issue) => {
+        nextErrors[issue.path.join('.')] = issue.message;
+      });
+      setRegenFormErrors(nextErrors);
+      return;
+    }
+
+    setIsSavingRegen(true);
+    try {
+      const updated = await updateListing(id, result.data);
+      setListing(updated);
+      setRegenForm(null);
+      setRegenPlatformStyle('');
+    } catch (err) {
+      const { message, fieldErrors } = extractApiError(err);
+
+      if (fieldErrors.length > 0) {
+        const nextErrors = {};
+        fieldErrors.forEach(({ field, message: fieldMessage }) => {
+          nextErrors[field] = fieldMessage;
+        });
+        setRegenFormErrors(nextErrors);
+      } else {
+        setRegenFormError(message);
+      }
+    } finally {
+      setIsSavingRegen(false);
+    }
+  };
+
   if (isLoading) {
     return <p className="text-sm text-gray-500">Loading listing...</p>;
   }
@@ -273,7 +420,7 @@ export default function ListingDetail() {
         className="h-64 w-full rounded-md border border-gray-200 object-cover sm:w-64"
       />
 
-      {!isEditing ? (
+      {!isEditing && !regenForm && (
         <>
           <h1 className="mt-4 text-xl font-semibold text-gray-900">{listing.title}</h1>
 
@@ -337,7 +484,7 @@ export default function ListingDetail() {
             )}
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
               onClick={startEditing}
@@ -353,8 +500,42 @@ export default function ListingDetail() {
               Delete
             </button>
           </div>
+
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <h2 className="text-sm font-medium text-gray-700">Regenerate with AI</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Uses the existing photo. Review the result before saving — nothing changes
+              until you save.
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <select
+                value={regenPlatformStyle}
+                onChange={(e) => setRegenPlatformStyle(e.target.value)}
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">Keep current platform style ({listing.platformStyle})</option>
+                <option value="general">General</option>
+                <option value="olx">OLX</option>
+                <option value="facebook">Facebook Marketplace</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={handleRegenerate}
+                disabled={isRegenerating}
+                className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+              >
+                {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+              </button>
+            </div>
+
+            {regenerateError && <p className="mt-2 text-sm text-red-600">{regenerateError}</p>}
+          </div>
         </>
-      ) : (
+      )}
+
+      {isEditing && (
         <div className="mt-4 space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Edit listing</h2>
 
@@ -615,6 +796,179 @@ export default function ListingDetail() {
               className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-50"
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {regenForm && (
+        <div className="mt-4 space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Review regenerated draft</h2>
+          <p className="text-sm text-gray-500">
+            Nothing has been saved yet. Edit if needed, then save to apply these changes.
+          </p>
+
+          <div>
+            <label htmlFor="regen-title" className="block text-sm font-medium text-gray-700">
+              Title
+            </label>
+            <input
+              id="regen-title"
+              type="text"
+              value={regenForm.title}
+              onChange={(e) => updateRegenField('title', e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+            {regenFormErrors.title && (
+              <p className="mt-1 text-sm text-red-600">{regenFormErrors.title}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="regen-description" className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              id="regen-description"
+              rows={5}
+              value={regenForm.description}
+              onChange={(e) => updateRegenField('description', e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+            {regenFormErrors.description && (
+              <p className="mt-1 text-sm text-red-600">{regenFormErrors.description}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="regen-category" className="block text-sm font-medium text-gray-700">
+              Category
+            </label>
+            <input
+              id="regen-category"
+              type="text"
+              value={regenForm.category}
+              onChange={(e) => updateRegenField('category', e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+            {regenFormErrors.category && (
+              <p className="mt-1 text-sm text-red-600">{regenFormErrors.category}</p>
+            )}
+          </div>
+
+          <div>
+            <span className="block text-sm font-medium text-gray-700">Highlights</span>
+            <div className="mt-1 space-y-2">
+              {regenForm.highlights.map((highlight, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={highlight}
+                    onChange={(e) => updateRegenHighlight(index, e.target.value)}
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeRegenHighlight(index)}
+                    className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-600"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            {regenForm.highlights.length < 6 && (
+              <button
+                type="button"
+                onClick={addRegenHighlight}
+                className="mt-2 text-sm font-medium text-gray-900 underline"
+              >
+                Add highlight
+              </button>
+            )}
+            {regenFormErrors.highlights && (
+              <p className="mt-1 text-sm text-red-600">{regenFormErrors.highlights}</p>
+            )}
+          </div>
+
+          {regenForm.estimatedPriceRange && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="regen-price-min" className="block text-sm font-medium text-gray-700">
+                  Estimated min (INR)
+                </label>
+                <input
+                  id="regen-price-min"
+                  type="number"
+                  min="0"
+                  value={regenForm.estimatedPriceRange.min}
+                  onChange={(e) => updateRegenPriceRange('min', e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                />
+                {regenFormErrors['estimatedPriceRange.min'] && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {regenFormErrors['estimatedPriceRange.min']}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="regen-price-max" className="block text-sm font-medium text-gray-700">
+                  Estimated max (INR)
+                </label>
+                <input
+                  id="regen-price-max"
+                  type="number"
+                  min="0"
+                  value={regenForm.estimatedPriceRange.max}
+                  onChange={(e) => updateRegenPriceRange('max', e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                />
+                {regenFormErrors['estimatedPriceRange.max'] && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {regenFormErrors['estimatedPriceRange.max']}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="regen-platform-style" className="block text-sm font-medium text-gray-700">
+              Platform style
+            </label>
+            <select
+              id="regen-platform-style"
+              value={regenForm.platformStyle}
+              onChange={(e) => updateRegenField('platformStyle', e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            >
+              <option value="general">General</option>
+              <option value="olx">OLX</option>
+              <option value="facebook">Facebook Marketplace</option>
+            </select>
+            {regenFormErrors.platformStyle && (
+              <p className="mt-1 text-sm text-red-600">{regenFormErrors.platformStyle}</p>
+            )}
+          </div>
+
+          {regenFormError && <p className="text-sm text-red-600">{regenFormError}</p>}
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleSaveRegen}
+              disabled={isSavingRegen}
+              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            >
+              {isSavingRegen ? 'Saving...' : 'Save regenerated content'}
+            </button>
+            <button
+              type="button"
+              onClick={discardRegenDraft}
+              disabled={isSavingRegen}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-50"
+            >
+              Discard
             </button>
           </div>
         </div>
