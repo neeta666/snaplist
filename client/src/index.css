@@ -1,1 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
+
+@theme {
+  --color-brand: #4338ca;
+  --color-brand-hover: #3730a3;
+  --color-brand-tint: #eef2ff;
+
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
+  --color-ink-subtle: #94a3b8;
+
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-surface-muted text-ink font-sans antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+}
