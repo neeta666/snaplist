@@ -1,24 +1,68 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #4338ca;
-  --color-brand-hover: #3730a3;
-  --color-brand-tint: #eef2ff;
+  --color-brand: #7c3aed;
+  --color-brand-hover: #6d28d9;
+  --color-brand-secondary: #9333ea;
+  --color-brand-tint: #f5f3ff;
+  --color-accent-soft: #c4b5fd;
+  --color-accent-pink: #ec4899;
 
   --color-surface: #ffffff;
-  --color-surface-muted: #f8fafc;
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
+  --color-surface-muted: #f9f8fc;
+  --color-surface-elevated: #fcfbff;
+  --color-surface-brand-panel: #cfc2f3;
+  --color-border: #e5e1ed;
+  --color-border-strong: #d4cde3;
 
-  --color-ink: #0f172a;
-  --color-ink-muted: #64748b;
-  --color-ink-subtle: #94a3b8;
+  --color-ink: #1e1b29;
+  --color-ink-muted: #6b647d;
+  --color-ink-subtle: #9c96ac;
 
   --color-danger: #dc2626;
   --color-danger-hover: #b91c1c;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --color-status-draft-bg: #f1f0f4;
+  --color-status-draft-text: #57536b;
+  --color-status-active-bg: #dcfce7;
+  --color-status-active-text: #15803d;
+  --color-status-sold-bg: #ffe4e9;
+  --color-status-sold-text: #be123c;
+
+  --gradient-brand: linear-gradient(135deg, #7c3aed 0%, #9333ea 35%, #c084fc 65%, #ec4899 100%);
+
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+[data-theme='dark'] {
+  --color-brand: #8b5cf6;
+  --color-brand-hover: #a78bfa;
+  --color-brand-secondary: #a855f7;
+  --color-brand-tint: #241f38;
+  --color-accent-soft: #c084fc;
+  --color-accent-pink: #f472b6;
+
+  --color-surface: #1c1930;
+  --color-surface-muted: #0d0b14;
+  --color-surface-elevated: #252140;
+  --color-surface-brand-panel: #252140;
+  --color-border: #2c2840;
+  --color-border-strong: #3d3752;
+
+  --color-ink: #f1eefa;
+  --color-ink-muted: #ada6c4;
+  --color-ink-subtle: #7a7391;
+
+  --color-danger: #f87171;
+  --color-danger-hover: #ef4444;
+
+  --color-status-draft-bg: #232030;
+  --color-status-draft-text: #b5afcb;
+  --color-status-active-bg: #113322;
+  --color-status-active-text: #4ade80;
+  --color-status-sold-bg: #3a1930;
+  --color-status-sold-text: #fb7185;
 }
 
 @layer base {

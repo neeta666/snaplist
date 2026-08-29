@@ -113,7 +113,7 @@ export default function AppLayout() {
                   </Link>
                   <Link
                     to="/register"
-                    className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover"
+                    className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover"        
                   >
                     Register
                   </Link>
@@ -201,14 +201,14 @@ export default function AppLayout() {
                 ) : (
                   <>
                     <Link
-                      to="/login"
+                      to="/auth/welcome?next=login"
                       onClick={closeMobileMenu}
                       className="block rounded-md px-3 py-2 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
                     >
                       Log in
                     </Link>
                     <Link
-                      to="/register"
+                      to="/auth/welcome?next=register"
                       onClick={closeMobileMenu}
                       className="block rounded-md px-3 py-2 text-sm font-medium text-brand hover:bg-brand-tint"
                     >
