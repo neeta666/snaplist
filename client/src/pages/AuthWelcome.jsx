@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import symbolMark from '../assets/snaplist-symbol.png';
-import wordmark from '../assets/snaplist-wordmark.png';
-import samplePhoto from '../assets/auth-sample-photo.jpeg';
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import symbolMark from "../assets/snaplist-symbol.png";
+import wordmark from "../assets/snaplist-wordmark.png";
+import samplePhoto from "../assets/auth-sample-photo.jpeg";
 
-const INK = '#1E1B29';
-const NAVY = '#172554';
-const INK_MUTED = '#6B647D';
-const VIOLET = '#7C3AED';
-const PINK = '#EC4899';
-const NEUTRAL_BG = '#F1EFE8';
+const INK = "#1E1B29";
+const NAVY = "#172554";
+const INK_MUTED = "#6B647D";
+const VIOLET = "#7C3AED";
+const PINK = "#EC4899";
+const NEUTRAL_BG = "#F1EFE8";
 
 const PANEL_BACKGROUND = [
-  'radial-gradient(ellipse at 104% -8%, rgba(236,72,153,0.58) 0%, rgba(217,70,239,0.44) 20%, rgba(124,58,237,0.32) 38%, transparent 61%)',
-  'radial-gradient(ellipse at -8% 108%, rgba(79,70,229,0.92) 0%, rgba(109,40,217,0.72) 25%, rgba(139,92,246,0.46) 43%, transparent 65%)',
-  'radial-gradient(ellipse at 76% 82%, rgba(244,114,182,0.34) 0%, rgba(232,121,249,0.20) 28%, transparent 55%)',
-  'linear-gradient(112deg, #F1E9FF 0%, #E9DEFF 42%, #E5D7FC 68%, #E9D9FA 100%)',
-].join(', ');
+  "radial-gradient(ellipse at 104% -8%, rgba(236,72,153,0.58) 0%, rgba(217,70,239,0.44) 20%, rgba(124,58,237,0.32) 38%, transparent 61%)",
+  "radial-gradient(ellipse at -8% 108%, rgba(79,70,229,0.92) 0%, rgba(109,40,217,0.72) 25%, rgba(139,92,246,0.46) 43%, transparent 65%)",
+  "radial-gradient(ellipse at 76% 82%, rgba(244,114,182,0.34) 0%, rgba(232,121,249,0.20) 28%, transparent 55%)",
+  "linear-gradient(112deg, #F1E9FF 0%, #E9DEFF 42%, #E5D7FC 68%, #E9D9FA 100%)",
+].join(", ");
 
 function SparkleIcon({ className, ...props }) {
   return (
@@ -91,7 +91,32 @@ export default function AuthWelcome() {
   const [searchParams] = useSearchParams();
   const [activeStep, setActiveStep] = useState(0);
 
-  const next = searchParams.get('next') === 'register' ? 'register' : 'login';
+  const next = searchParams.get("next") === "register" ? "register" : "login";
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+
+    const handleDesktopViewport = (event) => {
+      if (event.matches) {
+        navigate(next === "register" ? "/register" : "/login", {
+          replace: true,
+        });
+      }
+    };
+
+    if (desktopQuery.matches) {
+      navigate(next === "register" ? "/register" : "/login", {
+        replace: true,
+      });
+      return;
+    }
+
+    desktopQuery.addEventListener("change", handleDesktopViewport);
+
+    return () => {
+      desktopQuery.removeEventListener("change", handleDesktopViewport);
+    };
+  }, [navigate, next]);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -102,22 +127,19 @@ export default function AuthWelcome() {
   }, []);
 
   const handleContinue = () => {
-    navigate(next === 'register' ? '/register' : '/login');
+    navigate(next === "register" ? "/register" : "/login");
   };
 
   const getStepClasses = (step) => {
     if (step === activeStep) {
-      return 'translate-x-0 opacity-100';
+      return "translate-x-0 opacity-100";
     }
 
-    if (
-      step < activeStep ||
-      (activeStep === 0 && step === 2)
-    ) {
-      return '-translate-x-10 opacity-0';
+    if (step < activeStep || (activeStep === 0 && step === 2)) {
+      return "-translate-x-10 opacity-0";
     }
 
-    return 'translate-x-10 opacity-0';
+    return "translate-x-10 opacity-0";
   };
 
   return (
@@ -136,11 +158,7 @@ export default function AuthWelcome() {
 
       <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] max-w-2xl flex-col sm:min-h-[calc(100vh-4rem)]">
         <div className="flex items-center gap-2.5">
-          <img
-            src={symbolMark}
-            alt=""
-            className="h-11 w-11 sm:h-13 sm:w-13"
-          />
+          <img src={symbolMark} alt="" className="h-11 w-11 sm:h-13 sm:w-13" />
 
           <img
             src={wordmark}
@@ -156,7 +174,7 @@ export default function AuthWelcome() {
             </span>
 
             <span className="block">
-              <span style={{ color: VIOLET }}>List</span>{' '}
+              <span style={{ color: VIOLET }}>List</span>{" "}
               <span style={{ color: PINK }}>it.</span>
             </span>
 
@@ -167,7 +185,7 @@ export default function AuthWelcome() {
 
           <p
             className="mt-4 max-w-sm text-sm leading-relaxed sm:text-base"
-            style={{ color: '#4B3F67' }}
+            style={{ color: "#4B3F67" }}
           >
             Turn a product photo into a polished listing in seconds.
           </p>
@@ -316,8 +334,8 @@ export default function AuthWelcome() {
             onClick={handleContinue}
             className="w-full rounded-xl px-5 py-3.5 text-sm font-semibold text-white shadow-md transition-transform active:scale-[0.99] sm:mx-auto sm:block sm:max-w-md sm:text-base"
             style={{
-              background: 'linear-gradient(90deg, #6D28D9 0%, #EC4899 100%)',
-              boxShadow: '0 10px 28px rgba(124, 58, 237, 0.28)',
+              background: "linear-gradient(90deg, #6D28D9 0%, #EC4899 100%)",
+              boxShadow: "0 10px 28px rgba(124, 58, 237, 0.28)",
             }}
           >
             Continue
