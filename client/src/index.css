@@ -8,6 +8,7 @@
   --color-brand-tint: #f5f3ff;
   --color-accent-soft: #c4b5fd;
   --color-accent-pink: #ec4899;
+  --color-auth-heading: #052272;
 
   --color-surface: #ffffff;
   --color-surface-muted: #f9f8fc;
@@ -42,6 +43,7 @@
   --color-brand-tint: #241f38;
   --color-accent-soft: #c084fc;
   --color-accent-pink: #f472b6;
+  --color-auth-heading: #f8f7fc;
 
   --color-surface: #1c1930;
   --color-surface-muted: #0d0b14;

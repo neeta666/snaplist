@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import AppLayout from './layouts/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import Landing from './pages/Landing';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import AuthWelcome from './pages/AuthWelcome';
@@ -12,25 +13,7 @@ import ListingDetail from './pages/ListingDetail';
 import Listings from './pages/Listings';
 import { API_BASE_URL_ROOT } from './lib/apiClient';
 import { useSessionRestore } from './hooks/useSessionRestore';
-
-// Temporary Slice-0 scaffold at "/" — replaced by the real landing page later.
-function ScaffoldStatus() {
-  const [status, setStatus] = useState('checking...');
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL_ROOT}/health`)
-      .then((res) => res.json())
-      .then((body) => setStatus(`backend: ${body.data.status}, db: ${body.data.database}`))
-      .catch(() => setStatus('backend unreachable'));
-  }, []);
-
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-gray-900">SnapList</h1>
-      <p className="text-sm text-gray-500 mt-2">Slice 0 scaffold — {status}</p>
-    </div>
-  );
-}
+import { useTheme } from './hooks/useTheme';
 
 function SessionInitializer() {
   useSessionRestore();
@@ -38,6 +21,8 @@ function SessionInitializer() {
 }
 
 export default function App() {
+  useTheme();
+
   return (
     <BrowserRouter>
       <SessionInitializer />
@@ -46,8 +31,9 @@ export default function App() {
         <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
         <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
 
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<ScaffoldStatus />} />
+        <Route path="/" element={<Landing />} />
+        
+          <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Navigate to="/listings/new" replace />} />
           <Route
             path="/listings"

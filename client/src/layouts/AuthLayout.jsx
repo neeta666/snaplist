@@ -7,7 +7,7 @@ export default function AuthLayout({ children }) {
         <AuthBrandPanel />
       </div>
 
-      <div className="flex min-h-screen flex-1 items-start justify-center bg-[#F5F5F7] px-6 py-6 lg:items-center lg:px-12 lg:py-10">
+      <div className="flex min-h-screen flex-1 items-start justify-center bg-surface-muted px-6 py-6 lg:items-center lg:px-12 lg:py-10">
         <div className="w-full max-w-md">{children}</div>
       </div>
     </div>

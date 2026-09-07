@@ -157,8 +157,7 @@ export default function Login() {
 
       <div className="hidden lg:block">
         <h1
-          className="text-3xl font-bold tracking-tight text-ink"
-          style={{ color: "#052272" }}
+          className="text-3xl font-bold tracking-tight text-auth-heading"
         >
           Welcome back!
         </h1>
@@ -170,8 +169,7 @@ export default function Login() {
       <div className="rounded-2xl border border-border bg-surface-elevated p-6 shadow-sm md:p-7 lg:mt-8">
         <div className="mb-7 text-center lg:hidden">
           <h1
-            className="text-3xl font-bold tracking-tight text-ink"
-            style={{ color: "#052272" }}
+            className="text-3xl font-bold tracking-tight text-auth-heading"
           >
             Welcome back!
           </h1>

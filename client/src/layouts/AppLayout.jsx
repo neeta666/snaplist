@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { apiClient } from '../lib/apiClient';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 const authNavLinks = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -93,6 +94,8 @@ export default function AppLayout() {
             </nav>
 
             <div className="hidden md:flex items-center gap-4">
+              <ThemeToggle />
+              
               {isAuthenticated ? (
                 <>
                   <Link to="/profile" className="text-sm font-medium text-ink-muted hover:text-ink">
