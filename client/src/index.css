@@ -6,9 +6,14 @@
   --color-brand-hover: #6d28d9;
   --color-brand-secondary: #9333ea;
   --color-brand-tint: #f5f3ff;
+  --color-nav-active-bg: #ede9fe;
   --color-accent-soft: #c4b5fd;
   --color-accent-pink: #ec4899;
   --color-auth-heading: #052272;
+  --color-profile-hover-bg: #f1eef9;
+  --shadow-header:
+    0 10px 28px rgba(124, 58, 237, 0.16),
+    0 2px 8px rgba(124, 58, 237, 0.10);
 
   --color-surface: #ffffff;
   --color-surface-muted: #f9f8fc;
@@ -41,9 +46,14 @@
   --color-brand-hover: #a78bfa;
   --color-brand-secondary: #a855f7;
   --color-brand-tint: #241f38;
+  --color-nav-active-bg: #2f2748;
   --color-accent-soft: #c084fc;
   --color-accent-pink: #f472b6;
   --color-auth-heading: #f8f7fc;
+  --color-profile-hover-bg: #0d0b14;
+  --shadow-header:
+    0 14px 26px -8px rgba(96, 165, 250, 0.38),
+    0 6px 14px -6px rgba(139, 92, 246, 0.26);
 
   --color-surface: #1c1930;
   --color-surface-muted: #0d0b14;
