@@ -11,6 +11,7 @@
   --color-accent-pink: #ec4899;
   --color-auth-heading: #052272;
   --color-profile-hover-bg: #f1eef9;
+
   --shadow-header:
     0 10px 28px rgba(124, 58, 237, 0.16),
     0 2px 8px rgba(124, 58, 237, 0.10);
@@ -36,7 +37,29 @@
   --color-status-sold-bg: #ffe4e9;
   --color-status-sold-text: #be123c;
 
-  --gradient-brand: linear-gradient(135deg, #7c3aed 0%, #9333ea 35%, #c084fc 65%, #ec4899 100%);
+  /*
+   * Create / New Listing page
+   */
+  --color-create-panel: #ffffff;
+  --color-create-panel-border: #e4dcf7;
+  --color-create-input: #ffffff;
+  --color-create-input-border: #d8d3e3;
+  --color-create-soft: #f8f5ff;
+  --color-create-soft-strong: #f2ecff;
+  --color-create-drop-border: #b69cff;
+  --color-create-icon-bg: #f0e9ff;
+
+  --shadow-create-card:
+    0 10px 30px rgba(92, 64, 150, 0.06),
+    0 2px 8px rgba(92, 64, 150, 0.04);
+
+  --gradient-brand: linear-gradient(
+    135deg,
+    #7c3aed 0%,
+    #9333ea 35%,
+    #c084fc 65%,
+    #ec4899 100%
+  );
 
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
@@ -51,9 +74,10 @@
   --color-accent-pink: #f472b6;
   --color-auth-heading: #f8f7fc;
   --color-profile-hover-bg: #0d0b14;
+
   --shadow-header:
-    0 14px 26px -8px rgba(96, 165, 250, 0.38),
-    0 6px 14px -6px rgba(139, 92, 246, 0.26);
+    0 14px 26px -8px rgba(193, 48, 222, 0.164),
+    0 6px 14px -6px rgba(168, 85, 247, 0.24);
 
   --color-surface: #1c1930;
   --color-surface-muted: #0d0b14;
@@ -75,6 +99,22 @@
   --color-status-active-text: #4ade80;
   --color-status-sold-bg: #3a1930;
   --color-status-sold-text: #fb7185;
+
+  /*
+   * Create / New Listing page
+   */
+  --color-create-panel: #151221;
+  --color-create-panel-border: #332c49;
+  --color-create-input: #0f0d18;
+  --color-create-input-border: #47405e;
+  --color-create-soft: #1a1628;
+  --color-create-soft-strong: #211a36;
+  --color-create-drop-border: #7557c8;
+  --color-create-icon-bg: #2a2143;
+
+  --shadow-create-card:
+    0 12px 32px rgba(0, 0, 0, 0.22),
+    0 2px 10px rgba(124, 92, 246, 0.07);
 }
 
 @layer base {
@@ -85,5 +125,188 @@
   :focus-visible {
     outline: 2px solid var(--color-brand);
     outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /*
+   * Create-page background.
+   *
+   * The mockup uses a very soft lilac atmosphere plus a large translucent
+   * decorative form in the upper-right. These are CSS-only so they remain
+   * responsive and adapt automatically between light and dark themes.
+   */
+  .create-page-shell {
+    position: relative;
+    isolation: isolate;
+
+    /*
+     * Prevent the decorative pseudo-elements from creating horizontal
+     * scrolling on narrow/mobile viewports.
+     */
+    overflow-x: clip;
+  }
+
+  .create-page-shell::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    top: -6rem;
+    right: -1rem;
+    width: 34rem;
+    height: 19rem;
+    border-radius: 58% 42% 62% 38% / 46% 54% 46% 54%;
+    background:
+      linear-gradient(
+        135deg,
+        rgba(196, 181, 253, 0.28),
+        rgba(167, 139, 250, 0.18) 45%,
+        rgba(216, 180, 254, 0.11)
+      );
+    transform: rotate(-9deg);
+    pointer-events: none;
+  }
+
+  .create-page-shell::after {
+    content: "";
+    position: absolute;
+    z-index: -3;
+    top: -4rem;
+    left: 45%;
+    width: 28rem;
+    height: 16rem;
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle,
+      rgba(196, 181, 253, 0.13) 0%,
+      rgba(196, 181, 253, 0.05) 42%,
+      transparent 72%
+    );
+    filter: blur(12px);
+    pointer-events: none;
+  }
+
+  [data-theme='dark'] .create-page-shell::before {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(193, 48, 222, 0.11),
+        rgba(168, 85, 247, 0.10) 48%,
+        rgba(124, 58, 237, 0.06)
+      );
+  }
+
+  [data-theme='dark'] .create-page-shell::after {
+    background: radial-gradient(
+      circle,
+      rgba(193, 48, 222, 0.06) 0%,
+      rgba(168, 85, 247, 0.045) 42%,
+      transparent 72%
+    );
+  }
+
+  .create-panel {
+    border: 1px solid var(--color-create-panel-border);
+    background: var(--color-create-panel);
+    box-shadow: var(--shadow-create-card);
+  }
+
+  .create-field {
+    border: 1px solid var(--color-create-input-border);
+    background: var(--color-create-input);
+    color: var(--color-ink);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .create-field::placeholder {
+    color: var(--color-ink-subtle);
+  }
+
+  .create-field:focus {
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.10);
+    outline: none;
+  }
+
+  [data-theme='dark'] .create-field:focus {
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.14);
+  }
+
+  .create-dropzone {
+    border: 2px dashed var(--color-create-drop-border);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-create-soft) 75%, transparent),
+        color-mix(in srgb, var(--color-create-panel) 92%, transparent)
+      );
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .create-dropzone:hover,
+  .create-dropzone[data-dragging='true'] {
+    border-color: var(--color-brand);
+    background: var(--color-create-soft-strong);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.07);
+  }
+
+  [data-theme='dark'] .create-dropzone:hover,
+  [data-theme='dark'] .create-dropzone[data-dragging='true'] {
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.10);
+  }
+
+  /*
+   * Informational panels on the Create page:
+   * - photo usage notice
+   * - tips for better results
+   *
+   * Match the stronger lilac treatment used by the selected navigation tab.
+   */
+  .create-soft-panel {
+    background: var(--color-nav-active-bg);
+  }
+
+  /*
+   * The AI information strip is the direct bg-create-soft child of the
+   * Create-page shell. Give it the same stronger treatment without changing
+   * other bg-create-soft elements elsewhere in the page.
+   */
+  .create-page-shell > .bg-create-soft {
+    background-color: var(--color-nav-active-bg);
+  }
+
+  .create-gradient-button {
+    background: var(--gradient-brand);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.16);
+  }
+
+  .create-gradient-button:hover:not(:disabled) {
+    filter: brightness(1.04);
+    box-shadow: 0 10px 24px rgba(124, 58, 237, 0.22);
+  }
+
+  [data-theme='dark'] .create-gradient-button {
+    box-shadow: 0 8px 22px rgba(139, 92, 246, 0.18);
+  }
+
+  @media (max-width: 767px) {
+    .create-page-shell::before {
+      top: -2rem;
+      right: -8rem;
+      width: 24rem;
+      height: 15rem;
+      opacity: 0.55;
+    }
+
+    .create-page-shell::after {
+      display: none;
+    }
   }
 }

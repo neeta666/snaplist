@@ -59,6 +59,7 @@ export default function AppLayout() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const isAuthenticated = status === "authenticated";
+  const isCreatePage = pathname === "/listings/new";
 
   const handleLogout = async () => {
     try {
@@ -76,7 +77,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-surface-muted">
-      <header className="relative z-40 bg-surface shadow-[var(--shadow-header)]">
+      <header className="sticky top-0 z-40 bg-surface shadow-[var(--shadow-header)]">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <Link
@@ -295,7 +296,11 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
+      <main
+        className={`mx-auto px-4 py-6 ${
+          isCreatePage ? "max-w-[1440px]" : "max-w-5xl"
+        }`}
+      >
         <Outlet />
       </main>
     </div>
