@@ -50,7 +50,7 @@ export default function ThemeToggle({ menuItem = false, onThemeChange }) {
             onThemeChange?.();
           }, 0);
         }}
-        className="landing-mobile-menu-item flex h-11 w-full items-center gap-3 rounded-lg border border-transparent px-2 text-sm font-medium transition-all duration-200 hover:border-brand hover:bg-brand-tint hover:text-brand focus-visible:border-brand focus-visible:bg-brand-tint focus-visible:text-brand active:border-brand active:bg-brand-tint active:text-brand"
+        className="landing-mobile-menu-item flex h-11 w-full items-center gap-3 rounded-lg border border-transparent px-2 text-sm font-medium text-ink-muted transition-all duration-200 hover:border-brand hover:bg-brand-tint hover:text-brand focus-visible:border-brand focus-visible:bg-brand-tint focus-visible:text-brand active:border-brand active:bg-brand-tint active:text-brand"
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       >
         {isDark ? <SunIcon /> : <MoonIcon />}

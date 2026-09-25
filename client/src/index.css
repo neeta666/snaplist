@@ -309,4 +309,42 @@
       display: none;
     }
   }
+
+  .app-auth-mobile-menu {
+    background:
+      radial-gradient(
+        circle at 18% 0%,
+        rgba(139, 92, 246, 0.16),
+        transparent 36%
+      ),
+      radial-gradient(
+        circle at 88% 0%,
+        rgba(236, 72, 153, 0.07),
+        transparent 30%
+      ),
+      linear-gradient(180deg, #f5f0ff 0%, #eee7fa 100%);
+  }
+
+  [data-theme='dark'] .app-auth-mobile-menu {
+    background:
+      radial-gradient(
+        circle at 18% 0%,
+        rgba(168, 85, 247, 0.18),
+        transparent 36%
+      ),
+      radial-gradient(
+        circle at 88% 0%,
+        rgba(193, 48, 222, 0.09),
+        transparent 30%
+      ),
+      linear-gradient(180deg, #211a36 0%, #191426 100%);
+  }
+
+  .app-auth-mobile-divider {
+    border-color: rgba(48, 38, 68, 0.35);
+  }
+
+  [data-theme='dark'] .app-auth-mobile-divider {
+    border-color: rgba(255, 255, 255, 0.45);
+  }
 }
