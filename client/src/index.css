@@ -118,6 +118,10 @@
 }
 
 @layer base {
+  html {
+    overflow-y: scroll;
+  }
+
   body {
     @apply bg-surface-muted text-ink font-sans antialiased;
   }
@@ -294,6 +298,16 @@
 
   [data-theme='dark'] .create-gradient-button {
     box-shadow: 0 8px 22px rgba(139, 92, 246, 0.18);
+  }
+
+  .listings-filter-select {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .listings-filter-select option {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
   }
 
   @media (max-width: 767px) {

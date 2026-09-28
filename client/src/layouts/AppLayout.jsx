@@ -68,7 +68,8 @@ export default function AppLayout() {
   const [pressedMenuItem, setPressedMenuItem] = useState(null);
 
   const isAuthenticated = status === "authenticated";
-  const isCreatePage = pathname === "/listings/new";
+  const isWidePage =
+    pathname === "/listings/new" || pathname === "/listings";
 
   const handleLogout = async () => {
     try {
@@ -405,7 +406,7 @@ export default function AppLayout() {
 
       <main
         className={`mx-auto px-4 py-6 ${
-          isCreatePage ? "max-w-[1440px]" : "max-w-5xl"
+          isWidePage ? "max-w-[1440px]" : "max-w-5xl"
         }`}
       >
         <Outlet />
