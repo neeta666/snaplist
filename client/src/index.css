@@ -309,6 +309,14 @@
     background-color: var(--color-surface);
     color: var(--color-ink);
   }
+  
+  .listing-meta-chip {
+    background-color: color-mix(in srgb, var(--color-border) 50%, transparent);
+  }
+
+  [data-theme="dark"] .listing-meta-chip {
+    background-color: var(--color-surface-muted);
+  }
 
   @media (max-width: 767px) {
     .create-page-shell::before {

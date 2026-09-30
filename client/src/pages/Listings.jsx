@@ -2,8 +2,8 @@
 // search/filters. Read-only: edit/delete/regenerate live on ListingDetail.
 
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { getListings } from "../services/listingService";
+import { Link, useNavigate } from "react-router-dom";
+import { deleteListing, getListings } from "../services/listingService";
 import { extractApiError } from "../lib/apiErrors";
 
 const DEFAULT_FILTERS = {
@@ -18,6 +18,7 @@ export default function Listings() {
   // filters: what's shown in the inputs, updates immediately.
   // queryFilters: what's actually fetched with — search applies here after
   // a debounce, status/condition/platformStyle apply immediately.
+  const navigate = useNavigate();
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [queryFilters, setQueryFilters] = useState(DEFAULT_FILTERS);
   const searchDebounceRef = useRef(null);
@@ -25,12 +26,16 @@ export default function Listings() {
   const [listings, setListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [mobileFilterDraft, setMobileFilterDraft] = useState({
     status: "",
     condition: "",
     platformStyle: "",
   });
+  const [listingToDelete, setListingToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -81,6 +86,42 @@ export default function Listings() {
       window.scrollTo(0, scrollY);
     };
   }, [isMobileFiltersOpen]);
+
+  const handleDelete = async () => {
+    if (!listingToDelete || isDeleting) return;
+
+    setDeleteError("");
+    setIsDeleting(true);
+
+    try {
+      await deleteListing(listingToDelete.id);
+
+      setListings((current) =>
+        current.filter((listing) => listing.id !== listingToDelete.id),
+      );
+
+      setListingToDelete(null);
+    } catch (err) {
+      const { message } = extractApiError(err);
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (openMenuId === null) return;
+
+    const closeMenu = () => {
+      setOpenMenuId(null);
+    };
+
+    document.addEventListener("click", closeMenu);
+
+    return () => {
+      document.removeEventListener("click", closeMenu);
+    };
+  }, [openMenuId]);
 
   const updateImmediateFilter = (field, value) => {
     setFilters((current) => ({ ...current, [field]: value }));
@@ -476,44 +517,329 @@ export default function Listings() {
       ) : error ? (
         <p className="mt-6 text-sm text-red-600">{error}</p>
       ) : listings.length === 0 ? (
-        <p className="mt-6 text-sm text-gray-500">
-          {hasActiveFilters
-            ? "No listings match your search/filters."
-            : "You haven't saved any listings yet."}
-        </p>
-      ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {listings.map((listing) => (
+        hasActiveFilters ? (
+          <p className="mt-6 text-sm text-ink-muted">
+            No listings match your search/filters.
+          </p>
+        ) : (
+          <div className="create-soft-panel mt-6 rounded-2xl border-2 border-dotted border-brand/30 px-6 py-10 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-sm">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-7 w-7"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="m21 15-5-5L5 20" />
+              </svg>
+            </div>
+
+            <h2 className="mt-4 text-lg font-bold text-ink">No listings yet</h2>
+
+            <p className="mt-2 text-sm text-ink-muted">
+              Create your first listing with AI to get started.
+            </p>
+
             <Link
-              key={listing.id}
-              to={`/listings/${listing.id}`}
-              className="block overflow-hidden rounded-md border border-gray-200 hover:border-gray-400"
+              to="/listings/new"
+              className="create-gradient-button mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition"
             >
-              <img
-                src={listing.image.url}
-                alt={listing.title}
-                className="h-40 w-full object-cover"
-              />
-              <div className="p-3">
-                <h2 className="truncate text-sm font-medium text-gray-900">
-                  {listing.title}
-                </h2>
-                <p className="mt-1 text-sm text-gray-700">
-                  ₹{listing.askingPrice}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5">
+              <span aria-hidden="true">+</span>
+              Create your first listing
+            </Link>
+          </div>
+        )
+      ) : (
+        <>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {listings.map((listing) => (
+              <article
+                key={listing.id}
+                className="overflow-hidden rounded-2xl border border-border bg-surface transition hover:border-brand/40 hover:shadow-md"
+              >
+                <div className="relative">
+                  <Link to={`/listings/${listing.id}`} className="block">
+                    <img
+                      src={listing.image.url}
+                      alt={listing.title}
+                      className="h-40 w-full object-cover"
+                    />
+                  </Link>
+
+                  <span
+                    className={[
+                      "absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold capitalize shadow-sm",
+                      listing.status === "active"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : listing.status === "sold"
+                          ? "bg-rose-50 text-rose-700"
+                          : "bg-violet-50 text-violet-700",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "h-2 w-2 rounded-full",
+                        listing.status === "active"
+                          ? "bg-emerald-500"
+                          : listing.status === "sold"
+                            ? "bg-rose-500"
+                            : "bg-violet-500",
+                      ].join(" ")}
+                      aria-hidden="true"
+                    />
+
                     {listing.status}
                   </span>
-                  {listing.category && (
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5">
-                      {listing.category}
-                    </span>
-                  )}
                 </div>
-              </div>
+                <div className="p-3">
+                  <h2 className="truncate text-sm font-semibold text-ink">
+                    <Link
+                      to={`/listings/${listing.id}`}
+                      className="transition hover:text-brand"
+                    >
+                      {listing.title}
+                    </Link>
+                  </h2>
+                  <p className="mt-1 text-base font-bold text-brand">
+                    ₹{listing.askingPrice}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-ink-muted">
+                    {listing.category && (
+                      <span className="listing-meta-chip rounded-full px-2.5 py-1">
+                        {listing.category}
+                      </span>
+                    )}
+                    <span className="listing-meta-chip rounded-full px-2.5 py-1">
+                      {{
+                        new: "New",
+                        like_new: "Like new",
+                        good: "Good",
+                        fair: "Fair",
+                      }[listing.condition] ?? "Not specified"}
+                    </span>
+                  </div>
+                </div>
+                <div className="border-t border-border px-3 py-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="5" width="18" height="16" rx="2" />
+                        <path d="M16 3v4" />
+                        <path d="M8 3v4" />
+                        <path d="M3 10h18" />
+                      </svg>
+
+                      <span>
+                        Created{" "}
+                        {new Date(listing.createdAt).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        )}
+                      </span>
+                    </div>
+
+                    <div
+                      className="relative"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMenuId((current) =>
+                            current === listing.id ? null : listing.id,
+                          )
+                        }
+                        aria-label={`Actions for ${listing.title}`}
+                        aria-expanded={openMenuId === listing.id}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface-muted text-ink-muted transition hover:border-brand/40 hover:bg-brand-tint hover:text-brand"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          className="h-5 w-5"
+                          aria-hidden="true"
+                        >
+                          <circle cx="12" cy="5" r="1.5" />
+                          <circle cx="12" cy="12" r="1.5" />
+                          <circle cx="12" cy="19" r="1.5" />
+                        </svg>
+                      </button>
+
+                      {openMenuId === listing.id && (
+                        <div className="absolute bottom-10 right-0 z-20 w-32 overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-lg">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              navigate(`/listings/${listing.id}`);
+                            }}
+                            className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm font-medium text-ink transition hover:bg-brand-tint hover:text-brand"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                            </svg>
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              setDeleteError("");
+                              setListingToDelete(listing);
+                            }}
+                            className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M3 6h18" />
+                              <path d="M8 6V4h8v2" />
+                              <path d="M19 6l-1 14H6L5 6" />
+                              <path d="M10 11v5" />
+                              <path d="M14 11v5" />
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="create-soft-panel mt-6 rounded-2xl border-2 border-dotted border-brand/30 px-6 py-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white shadow-sm">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6"
+                aria-hidden="true"
+              >
+                <path d="m7 12 3 3 7-7" />
+              </svg>
+            </div>
+
+            <p className="mt-4 text-sm font-semibold text-ink">
+              You’re all caught up
+            </p>
+
+            <p className="mt-1 text-sm text-ink-muted">
+              Create another listing whenever you’re ready.
+            </p>
+
+            <Link
+              to="/listings/new"
+              className="create-gradient-button mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition"
+            >
+              <span aria-hidden="true">+</span>
+              Create listing
             </Link>
-          ))}
+          </div>
+        </>
+      )}
+
+      {listingToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-[2px]">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-listing-title"
+            className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              id="delete-listing-title"
+              className="flex items-center gap-2 text-lg font-bold text-ink"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5 text-red-600"
+                aria-hidden="true"
+              >
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M19 6l-1 14H6L5 6" />
+                <path d="M10 11v5" />
+                <path d="M14 11v5" />
+              </svg>
+              Delete listing?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-ink-muted">
+              This cannot be undone.
+            </p>
+
+            {deleteError && (
+              <p className="mt-3 text-sm text-red-600">{deleteError}</p>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setListingToDelete(null)}
+                disabled={isDeleting}
+                className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-surface-muted disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Confirm delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
